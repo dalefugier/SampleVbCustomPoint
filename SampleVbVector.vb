@@ -1,12 +1,9 @@
-﻿Imports System.IO
-Imports System.Runtime.Serialization
-Imports System.Runtime.Serialization.Formatters.Binary
-Imports System.Globalization
+﻿Imports System.Globalization
 Imports Rhino
 Imports Rhino.FileIO
 Imports Rhino.Geometry
 
-<Serializable()> Public Class SampleVbPoint
+Public Class SampleVbVector
 
   Private Const UnsetValue As Double = -1.23432101234321E+308
 
@@ -35,57 +32,48 @@ Imports Rhino.Geometry
   ''' <summary>
   ''' Copy constructor
   ''' </summary>
-  Sub New(ByVal src As SampleVbPoint)
+  Sub New(ByVal src As SampleVbVector)
     X = src.X
     Y = src.Y
     Z = src.Z
   End Sub
 
   ''' <summary>
-  ''' Construct from Rhino.Geometry.Point3d
+  ''' Construct from Rhino.Geometry.Vector3d
   ''' </summary>
-  Sub New(ByVal src As Point3d)
+  Sub New(ByVal src As Vector3d)
     X = src.X
     Y = src.Y
     Z = src.Z
   End Sub
 
   ''' <summary>
-  ''' Create
+  ''' Returns an unset vector
   ''' </summary>
-  Public Sub Create(src As SampleVbPoint)
-    Me.X = src.X
-    Me.Y = src.Y
-    Me.Z = src.Z
-  End Sub
-
-  ''' <summary>
-  ''' Returns an unset point
-  ''' </summary>
-  Public Shared ReadOnly Property Unset() As SampleVbPoint
+  Public Shared ReadOnly Property Unset() As SampleVbVector
     Get
-      Return New SampleVbPoint(UnsetValue, UnsetValue, UnsetValue)
+      Return New SampleVbVector(UnsetValue, UnsetValue, UnsetValue)
     End Get
   End Property
 
   ''' <summary>
   ''' Assignment operator
   ''' </summary>
-  Public Shared Widening Operator CType(ByVal src As Point3d) As SampleVbPoint
-    Return New SampleVbPoint(src)
+  Public Shared Widening Operator CType(ByVal src As Vector3d) As SampleVbVector
+    Return New SampleVbVector(src)
   End Operator
 
   ''' <summary>
   ''' Assignment operator
   ''' </summary>
-  Public Shared Widening Operator CType(ByVal src As SampleVbPoint) As Point3d
-    Return New Point3d(src.X, src.Y, src.Z)
+  Public Shared Widening Operator CType(ByVal src As SampleVbVector) As Vector3d
+    Return New Vector3d(src.X, src.Y, src.Z)
   End Operator
 
   ''' <summary>
   ''' Equals operator 
   ''' </summary>
-  Public Shared Operator =(ByVal p0 As SampleVbPoint, ByVal p1 As SampleVbPoint) As Boolean
+  Public Shared Operator =(ByVal p0 As SampleVbVector, ByVal p1 As SampleVbVector) As Boolean
     If (p0.X.Equals(p1.X) AndAlso p0.Y.Equals(p1.Y) AndAlso p0.Z.Equals(p1.Z)) Then
       Return True
     Else
@@ -96,7 +84,7 @@ Imports Rhino.Geometry
   ''' <summary>
   ''' Not equals operator
   ''' </summary>
-  Public Shared Operator <>(ByVal p0 As SampleVbPoint, ByVal p1 As SampleVbPoint) As Boolean
+  Public Shared Operator <>(ByVal p0 As SampleVbVector, ByVal p1 As SampleVbVector) As Boolean
     If (Not p0.X.Equals(p1.X) OrElse Not p0.Y.Equals(p1.Y) OrElse Not p0.Z.Equals(p1.Z)) Then
       Return True
     Else
@@ -124,13 +112,9 @@ Imports Rhino.Geometry
     Dim rc As Boolean = False
     Try
       archive.Write3dmChunkVersion(1, 0)
-      Dim formatter As IFormatter = New BinaryFormatter()
-      Dim stream As MemoryStream = New MemoryStream()
-      formatter.Serialize(stream, Me)
-      stream.Seek(0, 0)
-      Dim bytes() As Byte = stream.ToArray()
-      archive.WriteByteArray(bytes)
-      stream.Close()
+      archive.WriteDouble(X)
+      archive.WriteDouble(Y)
+      archive.WriteDouble(Z)
       rc = Not archive.WriteErrorOccured
     Catch
       ' TODO...
@@ -147,13 +131,9 @@ Imports Rhino.Geometry
     archive.Read3dmChunkVersion(major, minor)
     If (1 = major AndAlso 0 = minor) Then
       Try
-        Dim bytes() As Byte = archive.ReadByteArray()
-        Dim stream As MemoryStream = New MemoryStream(bytes)
-        Dim formatter As IFormatter = New BinaryFormatter()
-        Dim data As SampleVbPoint = CType(formatter.Deserialize(stream), SampleVbPoint)
-        If data IsNot Nothing Then
-          Me.Create(data)
-        End If
+        X = archive.ReadDouble()
+        Y = archive.ReadDouble()
+        Z = archive.ReadDouble()
         rc = Not archive.ReadErrorOccured
       Catch
         ' TODO...
@@ -173,4 +153,5 @@ Imports Rhino.Geometry
     Dim sz = Z.ToString(format, provider)
     Return String.Format("{0},{1},{2}", sx, sy, sz)
   End Function
+
 End Class
