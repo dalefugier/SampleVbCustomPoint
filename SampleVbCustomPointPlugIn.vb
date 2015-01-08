@@ -36,6 +36,35 @@ Namespace SampleVbCustomPoint
     End Property
 
     ''' <summary>
+    ''' OnLoad override
+    ''' </summary>
+    Protected Overrides Function OnLoad(ByRef errorMessage As String) As Rhino.PlugIns.LoadReturnCode
+      ' Add NewDocument event handler
+      AddHandler RhinoDoc.NewDocument, AddressOf OnNewDocument
+      ' Add CloseDocument event handler
+      AddHandler RhinoDoc.CloseDocument, AddressOf OnCloseDocument
+      Return PlugIns.LoadReturnCode.Success
+    End Function
+
+    ''' <summary>
+    ''' NewDocument event handler
+    ''' </summary>
+    Private Sub OnNewDocument(ByVal sender As Object, ByVal e As Rhino.DocumentEventArgs)
+      Point0 = SampleVbPoint.Unset
+      Point1 = SampleVbPoint.Unset
+      Point2 = SampleVbPoint.Unset
+    End Sub
+
+    ''' <summary>
+    ''' OnCloseDocument event handler
+    ''' </summary>
+    Private Sub OnCloseDocument(ByVal sender As Object, ByVal e As Rhino.DocumentEventArgs)
+      Point0 = SampleVbPoint.Unset
+      Point1 = SampleVbPoint.Unset
+      Point2 = SampleVbPoint.Unset
+    End Sub
+
+    ''' <summary>
     ''' ShouldCallWriteDocument override
     ''' </summary>
     Protected Overrides Function ShouldCallWriteDocument(options As FileWriteOptions) As Boolean
