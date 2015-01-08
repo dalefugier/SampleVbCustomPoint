@@ -144,9 +144,9 @@ Imports Rhino.Geometry
   Public Function Read(ByRef archive As BinaryArchiveReader) As Boolean
     Dim rc As Boolean = False
     Dim major As Integer, minor As Integer
-    archive.Read3dmChunkVersion(major, minor)
-    If (1 = major AndAlso 0 = minor) Then
-      Try
+    Try
+      archive.Read3dmChunkVersion(major, minor)
+      If (1 = major AndAlso 0 = minor) Then
         Dim bytes() As Byte = archive.ReadByteArray()
         Dim stream As MemoryStream = New MemoryStream(bytes)
         Dim formatter As IFormatter = New BinaryFormatter()
@@ -155,10 +155,10 @@ Imports Rhino.Geometry
           Me.Create(data)
         End If
         rc = Not archive.ReadErrorOccured
-      Catch
-        ' TODO...
-      End Try
-    End If
+      End If
+    Catch
+      ' TODO...
+    End Try
     Return rc
   End Function
 

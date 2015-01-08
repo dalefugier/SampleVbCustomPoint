@@ -7,8 +7,10 @@ Public Class SampleVbVector
 
   Private Const UnsetValue As Double = -1.23432101234321E+308
 
+  ' Version 1.0 members
   Public Property X As Double
   Public Property Y As Double
+  ' Version 1.1 members
   Public Property Z As Double
 
   ''' <summary>
@@ -18,6 +20,15 @@ Public Class SampleVbVector
     X = RhinoMath.UnsetValue
     Y = RhinoMath.UnsetValue
     Z = RhinoMath.UnsetValue
+  End Sub
+
+  ''' <summary>
+  ''' Constructor
+  ''' </summary>
+  Sub New(ByVal dx As Double, ByVal dy As Double)
+    X = dx
+    Y = dy
+    Z = 0.0
   End Sub
 
   ''' <summary>
@@ -41,6 +52,15 @@ Public Class SampleVbVector
   ''' <summary>
   ''' Construct from Rhino.Geometry.Vector3d
   ''' </summary>
+  Sub New(ByVal src As Vector2d)
+    X = src.X
+    Y = src.Y
+    Z = 0.0
+  End Sub
+
+  ''' <summary>
+  ''' Construct from Rhino.Geometry.Vector3d
+  ''' </summary>
   Sub New(ByVal src As Vector3d)
     X = src.X
     Y = src.Y
@@ -59,8 +79,22 @@ Public Class SampleVbVector
   ''' <summary>
   ''' Assignment operator
   ''' </summary>
+  Public Shared Widening Operator CType(ByVal src As Vector2d) As SampleVbVector
+    Return New SampleVbVector(src)
+  End Operator
+
+  ''' <summary>
+  ''' Assignment operator
+  ''' </summary>
   Public Shared Widening Operator CType(ByVal src As Vector3d) As SampleVbVector
     Return New SampleVbVector(src)
+  End Operator
+
+  ''' <summary>
+  ''' Assignment operator
+  ''' </summary>
+  Public Shared Narrowing Operator CType(ByVal src As SampleVbVector) As Vector2d
+    Return New Vector2d(src.X, src.Y)
   End Operator
 
   ''' <summary>
@@ -111,7 +145,8 @@ Public Class SampleVbVector
   Public Function Write(ByRef archive As BinaryArchiveWriter) As Boolean
     Dim rc As Boolean = False
     Try
-      archive.Write3dmChunkVersion(1, 0)
+      ' Always write "new" 1.1 version
+      archive.Write3dmChunkVersion(1, 1)
       archive.WriteDouble(X)
       archive.WriteDouble(Y)
       archive.WriteDouble(Z)
@@ -128,17 +163,23 @@ Public Class SampleVbVector
   Public Function Read(ByRef archive As BinaryArchiveReader) As Boolean
     Dim rc As Boolean = False
     Dim major As Integer, minor As Integer
-    archive.Read3dmChunkVersion(major, minor)
-    If (1 = major AndAlso 0 = minor) Then
-      Try
-        X = archive.ReadDouble()
-        Y = archive.ReadDouble()
-        Z = archive.ReadDouble()
+    Try
+      archive.Read3dmChunkVersion(major, minor)
+      If (major = 1) Then
+        If (minor >= 0) Then
+          ' Read 1.0 version
+          X = archive.ReadDouble()
+          Y = archive.ReadDouble()
+          If (minor = 1) Then
+            ' Read 1.1 version
+            Z = archive.ReadDouble()
+          End If
+        End If
         rc = Not archive.ReadErrorOccured
-      Catch
-        ' TODO...
-      End Try
-    End If
+      End If
+    Catch
+      ' TODO...
+    End Try
     Return rc
   End Function
 
